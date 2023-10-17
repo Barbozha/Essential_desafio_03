@@ -11,6 +11,8 @@ import com.barbozha.desafio_03.entities.Client;
 import com.barbozha.desafio_03.repositories.ClientRepository;
 import com.barbozha.desafio_03.services.exceptions.ResourceNotFoundException;
 
+import jakarta.persistence.EntityNotFoundException;
+
 
 @Service
 public class ClientService {
@@ -39,6 +41,18 @@ public class ClientService {
 		copyDtoToEntity(cli,entity);
 		entity = repository.save(entity);
 		return new ClientDTO(entity);
+	}
+	
+	@Transactional
+	public ClientDTO update(Long id, ClientDTO dto) {
+		try {
+			Client entity = repository.getReferenceById(id);
+			copyDtoToEntity(dto,entity);
+			return new ClientDTO(entity);
+		}catch(EntityNotFoundException e) {
+			throw new ResourceNotFoundException("cliente inexistente");
+		}
+		
 	}
 
 	private void copyDtoToEntity(ClientDTO cli, Client entity) {
