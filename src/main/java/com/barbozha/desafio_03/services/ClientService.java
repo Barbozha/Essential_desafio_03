@@ -1,14 +1,17 @@
 package com.barbozha.desafio_03.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.barbozha.desafio_03.dto.ClientDTO;
 import com.barbozha.desafio_03.entities.Client;
 import com.barbozha.desafio_03.repositories.ClientRepository;
+import com.barbozha.desafio_03.services.exceptions.DatabaseException;
 import com.barbozha.desafio_03.services.exceptions.ResourceNotFoundException;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -53,6 +56,18 @@ public class ClientService {
 			throw new ResourceNotFoundException("cliente inexistente");
 		}
 		
+	}
+	
+	@Transactional(propagation = Propagation.SUPPORTS)
+	public void delete(Long id) {
+		if(!repository.existsById(id)) {
+			throw new ResourceNotFoundException("cliente inexistente");
+		}
+		try {
+			repository.deleteById(id);
+		}catch(DataIntegrityViolationException e) {
+			throw new DatabaseException("Falha de Integridade Referencial");
+		}
 	}
 
 	private void copyDtoToEntity(ClientDTO cli, Client entity) {
